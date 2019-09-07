@@ -17,22 +17,16 @@ namespace Veldrid.Sdl2
     {
         private readonly List<SDL_Event> _events = new List<SDL_Event>();
         private IntPtr _window;
-        internal uint WindowID { get; private set; }
-        private bool _exists;
 
         // Threaded Sdl2Window flags
         protected readonly bool _threadedProcessing;
 
         private bool _shouldClose;
-        public bool LimitPollRate { get; set; }
-        public float PollIntervalInMs { get; set; }
-
         // Cached Sdl2Window state (for threaded processing)
         private BufferedValue<Point> _cachedPosition = new BufferedValue<Point>();
         private BufferedValue<Point> _cachedSize = new BufferedValue<Point>();
         private string _cachedWindowTitle;
         private bool _newWindowTitleReceived;
-        private bool _firstMouseEvent = true;
 
         public RawSdl2Window(string title, int x, int y, int width, int height, SDL_WindowFlags flags, bool threadedProcessing)
         {
@@ -100,12 +94,14 @@ namespace Veldrid.Sdl2
 
         public IntPtr Handle => GetUnderlyingWindowHandle();
 
-        public string Title { get => _cachedWindowTitle; set => SetWindowTitle(value); }
-
-        private void SetWindowTitle(string value)
+        public string Title
         {
-            _cachedWindowTitle = value;
-            _newWindowTitleReceived = true;
+            get => _cachedWindowTitle;
+            set
+            {
+                _cachedWindowTitle = value;
+                _newWindowTitleReceived = true;
+            }
         }
 
         public WindowState WindowState
@@ -165,7 +161,7 @@ namespace Veldrid.Sdl2
             }
         }
 
-        public bool Exists => _exists;
+        public bool Exists { get; private set; }
 
         public bool Visible
         {
@@ -233,6 +229,11 @@ namespace Veldrid.Sdl2
 
         public IntPtr SdlWindowHandle => _window;
 
+        internal uint WindowID { get; private set; }
+
+        public bool LimitPollRate { get; set; }
+        public float PollIntervalInMs { get; set; }
+
         public event Action Resized;
         public event Action Closing;
         public event Action Closed;
@@ -269,7 +270,7 @@ namespace Veldrid.Sdl2
             Sdl2WindowRegistry.RemoveWindow(this);
             Closing?.Invoke();
             SDL_DestroyWindow(_window);
-            _exists = false;
+            Exists = false;
             Closed?.Invoke();
         }
 
@@ -286,7 +287,7 @@ namespace Veldrid.Sdl2
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            while (_exists)
+            while (Exists)
             {
                 if (_shouldClose)
                 {
@@ -317,7 +318,7 @@ namespace Veldrid.Sdl2
                 SDL_ShowWindow(_window);
             }
 
-            _exists = true;
+            Exists = true;
         }
 
         // Called by Sdl2EventProcessor when an event for this window is encountered.
