@@ -11,11 +11,11 @@ namespace Veldrid.Sdl2
     internal static class Sdl2WindowRegistry
     {
         public static readonly object Lock = new object();
-        private static readonly Dictionary<uint, Sdl2Window> _eventsByWindowID
-            = new Dictionary<uint, Sdl2Window>();
+        private static readonly Dictionary<uint, RawSdl2Window> _eventsByWindowID
+            = new Dictionary<uint, RawSdl2Window>();
         private static bool _firstInit;
 
-        public static void RegisterWindow(Sdl2Window window)
+        public static void RegisterWindow(RawSdl2Window window)
         {
             lock (Lock)
             {
@@ -28,7 +28,7 @@ namespace Veldrid.Sdl2
             }
         }
 
-        public static void RemoveWindow(Sdl2Window window)
+        public static void RemoveWindow(RawSdl2Window window)
         {
             lock (Lock)
             {
@@ -71,7 +71,7 @@ namespace Veldrid.Sdl2
             }
 
 
-            if (handled && _eventsByWindowID.TryGetValue(windowID, out Sdl2Window window))
+            if (handled && _eventsByWindowID.TryGetValue(windowID, out RawSdl2Window window))
             {
                 window.AddEvent(ev);
             }
